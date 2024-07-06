@@ -18,25 +18,19 @@ public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String name;
     private String description;
     private LocalDateTime dateTime;
-
-
     @OneToMany(mappedBy = "event")
     private List<Ticket> tickets;
-
     @ManyToOne
     @JoinColumn(name = "artist_id")
     private Artist artist;
-
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
-
     @ManyToOne
     @JoinColumn(name = "venue_id")
     private Venue venue;
-
+    private String img;
 }

@@ -19,8 +19,7 @@ public class Artist {
     private String name;
     private String genre;
     private String bio;
-
     @OneToMany(mappedBy = "artist")
     private List<Event> events;
-
+    private String img;
 }

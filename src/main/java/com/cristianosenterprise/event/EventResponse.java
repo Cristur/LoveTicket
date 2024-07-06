@@ -2,6 +2,7 @@ package com.cristianosenterprise.event;
 
 
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -15,4 +16,5 @@ public class EventResponse {
     private Long artistId;
     private Long venueId;
     private Long categoryId;
+    private MultipartFile imgFile;
 }
