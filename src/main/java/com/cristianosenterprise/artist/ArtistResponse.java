@@ -2,7 +2,6 @@ package com.cristianosenterprise.artist;
 
 import com.cristianosenterprise.event.EventResponse;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -13,5 +12,5 @@ public class ArtistResponse {
     private String genre;
     private String bio;
     private List<EventResponse> events;
-    private MultipartFile imgFile;
+    private String img;
 }
