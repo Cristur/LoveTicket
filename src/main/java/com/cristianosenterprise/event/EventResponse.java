@@ -11,7 +11,6 @@ public class EventResponse {
     private String name;
     private String description;
     private LocalDateTime eventDate;
-    private Double price;
     private Long artistId;
     private Long venueId;
     private Long categoryId;

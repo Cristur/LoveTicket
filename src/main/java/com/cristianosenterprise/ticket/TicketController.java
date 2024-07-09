@@ -2,7 +2,6 @@ package com.cristianosenterprise.ticket;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -16,7 +15,6 @@ import java.util.List;
 @Validated
 public class TicketController {
 
-    @Autowired
     private final TicketService ticketService;
 
     @GetMapping
@@ -32,16 +30,15 @@ public class TicketController {
     }
 
     @PostMapping
-    public ResponseEntity<TicketRepsonse> createTicket(@RequestBody @Valid TicketRequest ticketRequest) {
+    public ResponseEntity<TicketRepsonse> create(@RequestBody @Valid TicketRequest ticketRequest) {
         TicketRepsonse createdTicket = ticketService.create(ticketRequest);
         return new ResponseEntity<>(createdTicket, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TicketRepsonse> update(@PathVariable Long id,
-                                                 @RequestBody @Valid TicketRequest ticketRequest) {
-        TicketRepsonse ticketResponse = ticketService.update(id, ticketRequest);
-        return ResponseEntity.ok(ticketResponse);
+    public ResponseEntity<TicketRepsonse> update(@PathVariable Long id, @RequestBody @Valid TicketRequest ticketRequest) {
+        TicketRepsonse updatedTicket = ticketService.update(id, ticketRequest);
+        return ResponseEntity.ok(updatedTicket);
     }
 
     @DeleteMapping("/{id}")

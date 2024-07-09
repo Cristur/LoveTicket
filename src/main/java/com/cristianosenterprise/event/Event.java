@@ -6,14 +6,14 @@ import com.cristianosenterprise.ticket.Ticket;
 import com.cristianosenterprise.venue.Venue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
 @Entity
 public class Event {
     @Id
@@ -21,7 +21,7 @@ public class Event {
     private Long id;
     private String name;
     private String description;
-    private LocalDateTime dateTime;
+    private LocalDateTime eventDate;
     @OneToMany(mappedBy = "event")
     private List<Ticket> tickets;
     @ManyToOne
