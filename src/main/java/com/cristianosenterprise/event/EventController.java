@@ -36,6 +36,12 @@ public class EventController {
         return ResponseEntity.ok(eventResponse);
     }
 
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<EventResponse>> findByCategory(@PathVariable Long categoryId) {
+        List<EventResponse> eventResponses = eventService.findByCategory(categoryId);
+        return ResponseEntity.ok(eventResponses);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EventResponse> createEvent(
             @RequestPart("event") @Valid String eventJson,

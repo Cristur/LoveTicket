@@ -42,6 +42,10 @@ public class UserService {
     private String maxFileSize;
 
 
+    public List<User> findAllUsers() {
+        return usersRepository.findAll();
+    }
+
     public Optional<LoginResponseDTO> login(String username, String password) {
         try {
             //SI EFFETTUA IL LOGIN

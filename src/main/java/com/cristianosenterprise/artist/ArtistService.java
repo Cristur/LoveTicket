@@ -26,7 +26,10 @@ import java.util.stream.Collectors;
 public class ArtistService {
 
     @Autowired
-    private ArtistRepository repository;
+    private ArtistRepository artistRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
 
     @Autowired
     private Cloudinary cloudinary;
@@ -37,12 +40,16 @@ public class ArtistService {
     private final Logger logger = LoggerFactory.getLogger(ArtistService.class);
 
     public List<ArtistResponse> findAll() {
-        return repository.findAll().stream()
+        return artistRepository.findAll().stream()
                 .map(artist -> {
                     ArtistResponse artistResponse = modelMapper.map(artist, ArtistResponse.class);
                     if (artist.getEvents() != null) {
                         List<EventResponse> eventResponses = artist.getEvents().stream()
-                                .map(event -> modelMapper.map(event, EventResponse.class))
+                                .map(event -> {
+                                    EventResponse eventResponse = modelMapper.map(event, EventResponse.class);
+                                    eventResponse.setTicketIds(event.getTickets() != null ? event.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);
+                                    return eventResponse;
+                                })
                                 .collect(Collectors.toList());
                         artistResponse.setEvents(eventResponses);
                     }
@@ -52,13 +59,17 @@ public class ArtistService {
     }
 
     public ArtistResponse findById(Long id) {
-        Artist artist = repository.findById(id)
+        Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
 
         ArtistResponse artistResponse = modelMapper.map(artist, ArtistResponse.class);
         if (artist.getEvents() != null) {
             List<EventResponse> eventResponses = artist.getEvents().stream()
-                    .map(event -> modelMapper.map(event, EventResponse.class))
+                    .map(event -> {
+                        EventResponse eventResponse = modelMapper.map(event, EventResponse.class);
+                        eventResponse.setTicketIds(event.getTickets() != null ? event.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);
+                        return eventResponse;
+                    })
                     .collect(Collectors.toList());
             artistResponse.setEvents(eventResponses);
         }
@@ -69,16 +80,43 @@ public class ArtistService {
     public ArtistResponse create(@Valid ArtistRequest artistRequest, MultipartFile image) throws IOException {
         Artist artist = modelMapper.map(artistRequest, Artist.class);
 
+        Artist savedArtist = artistRepository.save(artist);
+
+        // Aggiorna gli eventi con l'ID dell'artista appena creato
+        if (artistRequest.getEvents() != null) {
+            List<Event> events = artistRequest.getEvents().stream()
+                    .map(eventId -> {
+                        Event event = eventRepository.findById(eventId)
+                                .orElseThrow(() -> new RuntimeException("Event not found: " + eventId));
+                        event.setArtist(savedArtist);
+                        return eventRepository.save(event);
+                    })
+                    .collect(Collectors.toList());
+            savedArtist.setEvents(events);
+        }
+
         if (image != null && !image.isEmpty()) {
             Map<String, Object> uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap());
             String imageUrl = (String) uploadResult.get("url");
             artist.setImg(imageUrl);
         }
-        return modelMapper.map(repository.save(artist), ArtistResponse.class);
+
+        ArtistResponse artistResponse = modelMapper.map(artistRepository.save(artist), ArtistResponse.class);
+        if (savedArtist.getEvents() != null) {
+            List<EventResponse> eventResponses = savedArtist.getEvents().stream()
+                    .map(event -> {
+                        EventResponse eventResponse = modelMapper.map(event, EventResponse.class);
+                        eventResponse.setTicketIds(event.getTickets() != null ? event.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);
+                        return eventResponse;
+                    })
+                    .collect(Collectors.toList());
+            artistResponse.setEvents(eventResponses);
+        }
+        return artistResponse;
     }
 
     public ArtistResponse update(Long id, ArtistRequest artistRequest, MultipartFile image) throws IOException {
-        Artist artist = repository.findById(id)
+        Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
 
         modelMapper.map(artistRequest, artist);
@@ -93,12 +131,29 @@ public class ArtistService {
             artist.setImg(logoUrl);
         }
 
-        Artist updatedArtist = repository.save(artist);
+        Artist updatedArtist = artistRepository.save(artist);
+
+        // Aggiorna gli eventi con l'ID dell'artista appena aggiornato
+        if (artistRequest.getEvents() != null) {
+            List<Event> events = artistRequest.getEvents().stream()
+                    .map(eventId -> {
+                        Event event = eventRepository.findById(eventId)
+                                .orElseThrow(() -> new RuntimeException("Event not found: " + eventId));
+                        event.setArtist(updatedArtist);
+                        return eventRepository.save(event);
+                    })
+                    .collect(Collectors.toList());
+            updatedArtist.setEvents(events);
+        }
 
         ArtistResponse artistResponse = modelMapper.map(updatedArtist, ArtistResponse.class);
         if (updatedArtist.getEvents() != null) {
             List<EventResponse> eventResponses = updatedArtist.getEvents().stream()
-                    .map(event -> modelMapper.map(event, EventResponse.class))
+                    .map(event -> {
+                        EventResponse eventResponse = modelMapper.map(event, EventResponse.class);
+                        eventResponse.setTicketIds(event.getTickets() != null ? event.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);
+                        return eventResponse;
+                    })
                     .collect(Collectors.toList());
             artistResponse.setEvents(eventResponses);
         }
@@ -107,6 +162,6 @@ public class ArtistService {
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        artistRepository.deleteById(id);
     }
 }

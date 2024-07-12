@@ -43,21 +43,30 @@ public class EventService {
 
     public List<EventResponse> findAll() {
         return eventRepository.findAll().stream()
-                .map(event -> modelMapper.map(event, EventResponse.class))
+                .map(event -> {
+                    EventResponse eventResponse = modelMapper.map(event, EventResponse.class);
+                    eventResponse.setTicketIds(event.getTickets() != null ? event.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);
+                    return eventResponse;
+                })
                 .collect(Collectors.toList());
     }
 
     public EventResponse findById(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
-        return modelMapper.map(event, EventResponse.class);
+        EventResponse eventResponse = modelMapper.map(event, EventResponse.class);
+        eventResponse.setTicketIds(event.getTickets() != null ? event.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);
+        return eventResponse;
     }
 
     public EventResponse create(@Valid EventRequest eventRequest, MultipartFile image) throws IOException {
         Event event = modelMapper.map(eventRequest, Event.class);
 
-        event.setArtist(artistRepository.findById(eventRequest.getArtistId())
-                .orElseThrow(() -> new RuntimeException("Artist not found")));
+        if (eventRequest.getArtistId() != null) {
+            event.setArtist(artistRepository.findById(eventRequest.getArtistId())
+                    .orElseThrow(() -> new RuntimeException("Artist not found")));
+        }
+
         event.setCategory(categoryRepository.findById(eventRequest.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found")));
         event.setVenue(venueRepository.findById(eventRequest.getVenueId())
@@ -70,7 +79,9 @@ public class EventService {
         }
 
         Event savedEvent = eventRepository.save(event);
-        return modelMapper.map(savedEvent, EventResponse.class);
+        EventResponse eventResponse = modelMapper.map(savedEvent, EventResponse.class);
+        eventResponse.setTicketIds(savedEvent.getTickets() != null ? savedEvent.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);
+        return eventResponse;
     }
 
     public EventResponse update(Long id, @Valid EventRequest eventRequest, MultipartFile image) throws IOException {
@@ -80,8 +91,13 @@ public class EventService {
         modelMapper.map(eventRequest, event);
         event.setId(id);
 
-        event.setArtist(artistRepository.findById(eventRequest.getArtistId())
-                .orElseThrow(() -> new RuntimeException("Artist not found")));
+        if (eventRequest.getArtistId() != null) {
+            event.setArtist(artistRepository.findById(eventRequest.getArtistId())
+                    .orElseThrow(() -> new RuntimeException("Artist not found")));
+        } else {
+            event.setArtist(null);
+        }
+
         event.setCategory(categoryRepository.findById(eventRequest.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found")));
         event.setVenue(venueRepository.findById(eventRequest.getVenueId())
@@ -94,10 +110,22 @@ public class EventService {
         }
 
         Event savedEvent = eventRepository.save(event);
-        return modelMapper.map(savedEvent, EventResponse.class);
+        EventResponse eventResponse = modelMapper.map(savedEvent, EventResponse.class);
+        eventResponse.setTicketIds(savedEvent.getTickets() != null ? savedEvent.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);
+        return eventResponse;
     }
 
     public void delete(Long id) {
         eventRepository.deleteById(id);
+    }
+    public List<EventResponse> findByCategory(Long categoryId) {
+        List<Event> events = eventRepository.findByCategoryId(categoryId);
+        return events.stream()
+                .map(event -> {
+                    EventResponse eventResponse = modelMapper.map(event, EventResponse.class);
+                    eventResponse.setTicketIds(event.getTickets() != null ? event.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);
+                    return eventResponse;
+                })
+                .collect(Collectors.toList());
     }
 }

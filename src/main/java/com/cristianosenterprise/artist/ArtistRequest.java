@@ -15,6 +15,6 @@ public class ArtistRequest {
     private String name;
     private String genre;
     private String bio;
-    private List<EventResponse> events;
+    private List<Long> events;
     private MultipartFile img;
 }
