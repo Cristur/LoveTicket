@@ -3,8 +3,12 @@ package com.cristianosenterprise.event;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.cristianosenterprise.artist.ArtistRepository;
+import com.cristianosenterprise.artist.ArtistResponse;
 import com.cristianosenterprise.event_category.CategoryRepository;
+import com.cristianosenterprise.event_category.CategoryResponse;
+import com.cristianosenterprise.ticket.Ticket;
 import com.cristianosenterprise.venue.VenueRepository;
+import com.cristianosenterprise.venue.VenueResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -67,10 +71,15 @@ public class EventService {
                     .orElseThrow(() -> new RuntimeException("Artist not found")));
         }
 
-        event.setCategory(categoryRepository.findById(eventRequest.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found")));
-        event.setVenue(venueRepository.findById(eventRequest.getVenueId())
-                .orElseThrow(() -> new RuntimeException("Venue not found")));
+        if (eventRequest.getCategoryId() != null) {
+            event.setCategory(categoryRepository.findById(eventRequest.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found")));
+        }
+
+        if (eventRequest.getVenueId() != null) {
+            event.setVenue(venueRepository.findById(eventRequest.getVenueId())
+                    .orElseThrow(() -> new RuntimeException("Venue not found")));
+        }
 
         if (image != null && !image.isEmpty()) {
             Map<String, Object> uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap());
@@ -94,14 +103,17 @@ public class EventService {
         if (eventRequest.getArtistId() != null) {
             event.setArtist(artistRepository.findById(eventRequest.getArtistId())
                     .orElseThrow(() -> new RuntimeException("Artist not found")));
-        } else {
-            event.setArtist(null);
         }
 
-        event.setCategory(categoryRepository.findById(eventRequest.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found")));
-        event.setVenue(venueRepository.findById(eventRequest.getVenueId())
-                .orElseThrow(() -> new RuntimeException("Venue not found")));
+        if (eventRequest.getCategoryId() != null) {
+            event.setCategory(categoryRepository.findById(eventRequest.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found")));
+        }
+
+        if (eventRequest.getVenueId() != null) {
+            event.setVenue(venueRepository.findById(eventRequest.getVenueId())
+                    .orElseThrow(() -> new RuntimeException("Venue not found")));
+        }
 
         if (image != null && !image.isEmpty()) {
             Map<String, Object> uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap());
@@ -118,9 +130,9 @@ public class EventService {
     public void delete(Long id) {
         eventRepository.deleteById(id);
     }
+
     public List<EventResponse> findByCategory(Long categoryId) {
-        List<Event> events = eventRepository.findByCategoryId(categoryId);
-        return events.stream()
+        return eventRepository.findByCategory_Id(categoryId).stream()
                 .map(event -> {
                     EventResponse eventResponse = modelMapper.map(event, EventResponse.class);
                     eventResponse.setTicketIds(event.getTickets() != null ? event.getTickets().stream().map(ticket -> ticket.getId()).collect(Collectors.toList()) : null);

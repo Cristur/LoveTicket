@@ -1,6 +1,9 @@
 package com.cristianosenterprise.event;
 
 
+import com.cristianosenterprise.artist.ArtistResponse;
+import com.cristianosenterprise.event_category.CategoryResponse;
+import com.cristianosenterprise.venue.VenueResponse;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,9 +17,9 @@ public class EventResponse {
     private String name;
     private String description;
     private LocalDateTime eventDate;
-    private Long artistId;
-    private Long venueId;
-    private Long categoryId;
+    private ArtistResponse artist;
+    private VenueResponse venue;
+    private CategoryResponse category;
     private String img;
     private List<Long> ticketIds;
 }

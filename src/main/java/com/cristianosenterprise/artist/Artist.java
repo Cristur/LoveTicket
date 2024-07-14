@@ -1,6 +1,7 @@
 package com.cristianosenterprise.artist;
 
 import com.cristianosenterprise.event.Event;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class Artist {
     private String genre;
     private String bio;
     @OneToMany(mappedBy = "artist")
+    @JsonManagedReference
     private List<Event> events;
     private String img;
 }
