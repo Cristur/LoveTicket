@@ -58,6 +58,7 @@ public class EventController {
                                                 @Valid @RequestPart("event") String eventJson,
                                                 @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
         EventRequest eventRequest = objectMapper.readValue(eventJson, EventRequest.class);
         EventResponse eventResponse = eventService.update(id, eventRequest, image);
         return ResponseEntity.ok(eventResponse);

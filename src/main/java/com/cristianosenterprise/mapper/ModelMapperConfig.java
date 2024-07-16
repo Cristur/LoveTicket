@@ -6,7 +6,7 @@ import com.cristianosenterprise.event.EventRequest;
 import com.cristianosenterprise.event.EventResponse;
 import com.cristianosenterprise.event_category.CategoryResponse;
 import com.cristianosenterprise.ticket.Ticket;
-import com.cristianosenterprise.ticket.TicketRepsonse;
+import com.cristianosenterprise.ticket.TicketResponse;
 import com.cristianosenterprise.ticket.TicketRequest;
 import com.cristianosenterprise.venue.VenueResponse;
 import org.modelmapper.Converter;
@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 @Configuration
 public class ModelMapperConfig {
-
     @Bean
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
@@ -86,19 +85,34 @@ public class ModelMapperConfig {
             mapper.skip(Event::setVenue);
         });
 
+        // Custom converter for Ticket to TicketResponse
+        Converter<Ticket, TicketResponse> ticketToTicketResponseConverter = context -> {
+            Ticket source = context.getSource();
+            TicketResponse destination = new TicketResponse();
+            destination.setId(source.getId());
+            destination.setTicketNumber(source.getTicketNumber());
+            destination.setPrice(source.getPrice());
+            destination.setSold(source.isSold());
+
+            if (source.getEvent() != null) {
+                EventResponse eventResponse = modelMapper.map(source.getEvent(), EventResponse.class);
+                destination.setEvent(eventResponse);
+            }
+
+            if (source.getUser() != null) {
+                destination.setUserId(source.getUser().getId());
+            }
+
+            return destination;
+        };
+
+        // Add the custom converter to the modelMapper
+        modelMapper.addConverter(ticketToTicketResponseConverter, Ticket.class, TicketResponse.class);
+
         // Mappatura manuale degli ID per evitare problemi di mappatura implicita
         modelMapper.typeMap(TicketRequest.class, Ticket.class).addMappings(mapper -> {
             mapper.skip(Ticket::setEvent); // Ignoriamo la mappatura automatica degli oggetti complessi
             mapper.skip(Ticket::setUser); // Ignoriamo la mappatura automatica degli oggetti complessi
-        });
-
-        // Configura la mappatura per TicketRequest -> Ticket
-        modelMapper.addMappings(new PropertyMap<Ticket, TicketRepsonse>() {
-            @Override
-            protected void configure() {
-                map().setEventId(source.getEvent().getId());
-                map().setUserId(source.getUser().getId());
-            }
         });
 
         return modelMapper;

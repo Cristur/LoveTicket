@@ -18,26 +18,32 @@ public class TicketController {
     private final TicketService ticketService;
 
     @GetMapping
-    public ResponseEntity<List<TicketRepsonse>> findAll() {
-        List<TicketRepsonse> ticketResponses = ticketService.findAll();
+    public ResponseEntity<List<TicketResponse>> findAll() {
+        List<TicketResponse> ticketResponses = ticketService.findAll();
         return ResponseEntity.ok(ticketResponses);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TicketRepsonse> findById(@PathVariable Long id) {
-        TicketRepsonse ticketResponse = ticketService.findById(id);
+    public ResponseEntity<TicketResponse> findById(@PathVariable Long id) {
+        TicketResponse ticketResponse = ticketService.findById(id);
         return ResponseEntity.ok(ticketResponse);
     }
 
+    @GetMapping("/event/{eventId}")
+    public ResponseEntity<List<TicketResponse>> findByEventId(@PathVariable Long eventId) {
+        List<TicketResponse> ticketResponses = ticketService.findByEventId(eventId);
+        return ResponseEntity.ok(ticketResponses);
+    }
+
     @PostMapping
-    public ResponseEntity<TicketRepsonse> create(@RequestBody @Valid TicketRequest ticketRequest) {
-        TicketRepsonse createdTicket = ticketService.create(ticketRequest);
+    public ResponseEntity<TicketResponse> create(@RequestBody @Valid TicketRequest ticketRequest) {
+        TicketResponse createdTicket = ticketService.create(ticketRequest);
         return new ResponseEntity<>(createdTicket, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TicketRepsonse> update(@PathVariable Long id, @RequestBody @Valid TicketRequest ticketRequest) {
-        TicketRepsonse updatedTicket = ticketService.update(id, ticketRequest);
+    public ResponseEntity<TicketResponse> update(@PathVariable Long id, @RequestBody @Valid TicketRequest ticketRequest) {
+        TicketResponse updatedTicket = ticketService.update(id, ticketRequest);
         return ResponseEntity.ok(updatedTicket);
     }
 

@@ -2,74 +2,81 @@ package com.cristianosenterprise.ticket;
 
 import com.cristianosenterprise.event.EventRepository;
 import com.cristianosenterprise.security.UserRespository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
-
-import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Validated
 @RequiredArgsConstructor
 public class TicketService {
 
-    @Autowired
-    private TicketRepository ticketRepository;
+    private final TicketRepository ticketRepository;
+    private final EventRepository eventRepository;
+    private final UserRespository userRepository;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    private EventRepository eventRepository;
-
-    @Autowired
-    private UserRespository userRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
-    public List<TicketRepsonse> findAll() {
+    public List<TicketResponse> findAll() {
         return ticketRepository.findAll().stream()
-                .map(ticket -> modelMapper.map(ticket, TicketRepsonse.class))
+                .map(ticket -> modelMapper.map(ticket, TicketResponse.class))
                 .collect(Collectors.toList());
     }
 
-    public TicketRepsonse findById(Long id) {
+    public TicketResponse findById(Long id) {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
-        return modelMapper.map(ticket, TicketRepsonse.class);
+        return modelMapper.map(ticket, TicketResponse.class);
     }
 
-    public TicketRepsonse create(@Valid TicketRequest ticketRequest) {
+    public TicketResponse create(@Valid TicketRequest ticketRequest) {
         Ticket ticket = modelMapper.map(ticketRequest, Ticket.class);
 
-        ticket.setEvent(eventRepository.findById(ticketRequest.getEventId())
-                .orElseThrow(() -> new RuntimeException("Event not found")));
-        ticket.setUser(userRepository.findById(ticketRequest.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found")));
+        // Set event and user
+        if (ticketRequest.getEventId() != null) {
+            ticket.setEvent(eventRepository.findById(ticketRequest.getEventId())
+                    .orElseThrow(() -> new RuntimeException("Event not found")));
+        }
+
+        if (ticketRequest.getUserId() != null) {
+            ticket.setUser(userRepository.findById(ticketRequest.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found")));
+        }
 
         Ticket savedTicket = ticketRepository.save(ticket);
-        return modelMapper.map(savedTicket, TicketRepsonse.class);
+        return modelMapper.map(savedTicket, TicketResponse.class);
     }
 
-    public TicketRepsonse update(Long id, @Valid TicketRequest ticketRequest) {
+    public TicketResponse update(Long id, @Valid TicketRequest ticketRequest) {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
 
         modelMapper.map(ticketRequest, ticket);
 
-        ticket.setEvent(eventRepository.findById(ticketRequest.getEventId())
-                .orElseThrow(() -> new RuntimeException("Event not found")));
-        ticket.setUser(userRepository.findById(ticketRequest.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found")));
+        // Set event and user
+        if (ticketRequest.getEventId() != null) {
+            ticket.setEvent(eventRepository.findById(ticketRequest.getEventId())
+                    .orElseThrow(() -> new RuntimeException("Event not found")));
+        }
+
+        if (ticketRequest.getUserId() != null) {
+            ticket.setUser(userRepository.findById(ticketRequest.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found")));
+        }
 
         Ticket savedTicket = ticketRepository.save(ticket);
-        return modelMapper.map(savedTicket, TicketRepsonse.class);
+        return modelMapper.map(savedTicket, TicketResponse.class);
     }
 
     public void delete(Long id) {
         ticketRepository.deleteById(id);
+    }
+
+    public List<TicketResponse> findByEventId(Long eventId) {
+        return ticketRepository.findByEvent_Id(eventId).stream()
+                .map(ticket -> modelMapper.map(ticket, TicketResponse.class))
+                .collect(Collectors.toList());
     }
 }

@@ -98,7 +98,6 @@ public class EventService {
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
         modelMapper.map(eventRequest, event);
-        event.setId(id);
 
         if (eventRequest.getArtistId() != null) {
             event.setArtist(artistRepository.findById(eventRequest.getArtistId())
@@ -119,6 +118,10 @@ public class EventService {
             Map<String, Object> uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.emptyMap());
             String imageUrl = (String) uploadResult.get("url");
             event.setImg(imageUrl);
+        } else {
+            // Preserve the existing image URL if a new image is not provided
+            Event existingEvent = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+            event.setImg(existingEvent.getImg());
         }
 
         Event savedEvent = eventRepository.save(event);

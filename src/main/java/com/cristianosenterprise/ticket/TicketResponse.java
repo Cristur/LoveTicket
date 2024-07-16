@@ -1,5 +1,6 @@
 package com.cristianosenterprise.ticket;
 
+import com.cristianosenterprise.event.EventResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,11 +8,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TicketRepsonse {
+public class TicketResponse {
     private Long id;
     private String ticketNumber;
     private Double price;
     private boolean isSold;
-    private Long eventId;
+    private EventResponse event;
     private Long userId;
 }
